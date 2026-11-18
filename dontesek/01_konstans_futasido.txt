@@ -1,0 +1,17 @@
+Döntés 01: Konstans futásidő a H1/H2 hash-eknél
+Dátum: 2026-11-16
+
+1. Az ötlet: miért merült fel?
+A H1 és H2 hash-függvény bemenete így épül fel: TAG, a jelszó hossza, a jelszó, a munkamenet-azonosító (sid, session identifier) hossza, a sid, végül r vagy s. Ennek a bemenetnek a hossza a jelszó hosszától függ, ezért a hash kiszámításának ideje is. Ez elvben időzítéses oldalcsatorna (timing side channel) lehetne: aki a futásidőt méri, megtudhatna valamit a jelszó hosszáról. Felmerült, hogy a jelszót töltsük ki fix hosszra (padding), hogy a futásidő mindig ugyanannyi legyen.
+
+2. Miért nem kell: a SHAKE256 blokkmérete
+A SHAKE256 (Secure Hash Algorithm Keccak alapú, változó kimenethosszú függvénye, 256 bites biztonsági szinttel) a bemenetet 136 bájtos blokkokban dolgozza fel. A futásidő ezért a blokkok számától függ, nem a pontos bájtszámtól: egy 10 és egy 60 bájtos jelszó ugyanannyi blokkot jelent, tehát ugyanannyi ideig tart. A gyakorlatban minden jelszó a többi mezővel együtt 1 vagy 2 blokkba fér bele, így legfeljebb annyi derülhetne ki, hogy a jelszó "rövid" vagy "nagyon hosszú". A jelszó tartalmáról semmi nem szivárog.
+
+3. Miért nem a padding a jó megoldás
+Ha nullás bájtokkal töltenénk ki, akkor az "a" és az "a\0" jelszó ugyanarra a bemenetre képződne le (ütközés). Ezt csak úgy lehet elkerülni, ha a hosszt külön kódoljuk, tehát a hossz-előtag padding mellett is kellene. Ráadásul a paddinghez rögzíteni kellene egy maximális jelszóhosszt, ami fölösleges korlátozás.
+
+4. Ha mégis szükség lenne rá
+A szokásos megoldás az előzetes hash-elés: a jelszót először egy fix kimenetű függvénnyel alakítjuk át, például pw' = SHA3-256(pw), vagy egy jelszó-hash-elő függvénnyel, mint az Argon2. Így a H1 és H2 mindig fix, 32 bájtos jelszó-bemenetet kap, és a futásidő nem függ a jelszó hosszától.
+
+5. Döntés
+Nem vezetünk be konstans futásidőt és paddinget. Marad a 8 bájtos, big-endian (legnagyobb helyiértékű bájt elöl) hossz-előtag (encode_len), ami a bemenet injektív, vagyis egyértelműen visszafejthető kódolását biztosítja. A szakdolgozatban egy mondatban meg kell említeni ezt a csekély szivárgást (jelszóhossz blokkszintű pontossággal), és az előzetes hash-elést mint lehetséges javítást.
