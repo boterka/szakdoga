@@ -17,7 +17,7 @@ void encode_len(uint8_t out[8], size_t len)
 }
 
 
-static int hash_pw_sid((uint8_t tag,
+int hash_pw_sid(uint8_t tag,
                            const uint8_t *pw, size_t pwlen,
                            const uint8_t *sid, size_t sidlen,
                            const uint8_t *r_s, size_t r_slen,
@@ -53,5 +53,5 @@ int hash_h2(uint8_t out[NONCE_LEN],
             const uint8_t *sid, size_t sidlen,
             const uint8_t *s, size_t slen)
 {
-    return hash_pw_sid((TAG_H2, pw, pwlen, sid, sidlen, s, slen, out, NONCE_LEN);
+    return hash_pw_sid(TAG_H2, pw, pwlen, sid, sidlen, s, slen, out, NONCE_LEN);
 }
