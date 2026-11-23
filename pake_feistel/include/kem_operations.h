@@ -16,6 +16,10 @@ typedef struct {
 } kem_ops;
 
 extern const kem_ops KEM_FRODO640;
+extern const kem_ops KEM_MCE348864;
+extern const kem_ops KEM_HQC1;
+extern const kem_ops KEM_BIKE_L1;
+extern const kem_ops KEM_MLKEM512;
 //extern const kem_ops KEM_MLKEM768;
 
 #endif
