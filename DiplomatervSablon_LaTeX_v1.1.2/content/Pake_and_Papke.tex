@@ -1,0 +1,23 @@
+\chapter{Pake and Papke}
+
+\section{Public Key Infrastructure}
+
+The internet is underlined by a system, that usually not many developers or users come across. Which is reffered to as the \textbf{Public Key Infrastructure (PKI)}.
+
+The problem \textbf{PKI} solves is basically the hole that \textbf{PKE} simply cannot cover. Given 2 parties - Alice and Bob - who want to communicate over a public channel, they can now establish a secure connection without first meeting up and exchanging secrets. But how can Alice be certain that she is speaking with Bob?
+
+Well the solution is perhaps rather underwhelming, we trust a third party to vouch for Bob, that he is who he pretends to be. The natural question arises, why would we trust the third party? Well we do the same, we rely on a fourth party to vouch for the third party. Sadly there is just no way around it. We will need a \emph{root of trust}, if it vouches for anyone, we simply believe it.
+
+We can use public key signature systems as follows: Bob has a certificate that is signed by the third party, which cannot be forged.
+
+We call these third paries \textbf{Certificate Authorities (CA)}, and order them in a hierarchy. The \textbf{CA} on the top of the chain, is called \emph{root CA}, and their public key is usually built into modern operating systems, when they are downloaded.
+
+\section{PAKE and PAPKE}
+
+\textbf{PKI} is the standard way to gurad against \emph{Man in the Middle attacks (MitM)}, but we cannot always rely on it. For example, if we want to connect to a router's wifi, or an IOT device, we do not have the luxury of \textbf{PKI}. Our next best bet is relying on a shared password for authentication, thus the names, Password Authenticated Key Exchange (PAKE) and Password Authenticated Public Key encrpytion (PAPKE).
+
+In post quantum crypto systems, we rely heavly on KEMs, therefore the main topic of this work is \textbf{PAKE}. One of the earliest proposed solutions for a pake system, was the Encrypted Key Exchange (EKE). The idea in EKE, was to encrypt the diffie hellman key exchange messeges with a symetric encryption and the shared password as the key.
+
+%Here we need to talk about the types of attacks we need to defend against
+
+%also need to talk about NoIC. Feistel.

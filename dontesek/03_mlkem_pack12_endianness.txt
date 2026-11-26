@@ -1,0 +1,9 @@
+ML-KEM pack12/unpack12 és az endianness – 2026-11-24
+
+Két különböző endiannessről lehet szó, és a válasz a kettőre más.
+
+A gép endiannesse (hogy a CPU hogyan tárolja a többbájtos számokat): nem számít. A pack12 és az unpack12 csak eltolással (>>, <<) és maszkolással (&, |) dolgozik a számok értékén, egyenként uint8_t bájtokba ír, és sehol nem másol be egy uint16_t-t a memóriába nyersen (például memcpy-vel). Az eltolás értékre vonatkozik, nem a memóriabeli elrendezésre, ezért a kód little- és big-endian gépen is ugyanazt a bájtsorozatot adja.
+
+A formátum bájtsorrendje (hogy a 12 bites számok bitjei milyen sorrendben kerülnek a bájtokba): ez számít. A FIPS 203 little-endiant ír elő: az a alsó 8 bitje jön előre, és a közös középső bájt alsó felében az a felső bitjei vannak. A liboqs által generált pk pontosan ebben a formában jön. Az add ezt a valódi pk-t csomagolja ki az unpack12-vel, ezért annak a FIPS-formátumot kell követnie. Ha a sorrendet megfordítanánk, a pk-ból rossz együtthatókat olvasnánk ki, a mod q összeadás szemetet adna, és a visszafejtett pk nem egyezne az eredetivel.
+
+Saját magával a pack12 és az unpack12 bármelyik sorrendben konzisztens lenne. A szabványhoz viszont igazodnia kell, mert a pk a szabványos kódolásban érkezik. A jelenlegi kód a FIPS 203 sorrendjét követi, tehát rendben van.

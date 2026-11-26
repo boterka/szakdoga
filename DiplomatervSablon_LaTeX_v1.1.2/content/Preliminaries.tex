@@ -1,0 +1,211 @@
+\chapter{Preliminaries}
+
+Before delving into the technical details, this section aims to provide an intuitive picture of the structures and functions utilized in cryptography. The following material assumes a baseline familiarity with basic calculus, number theory, and standard notations and functions used in computer science, such as hash functions. Where examples are required, classical cryptographic protocols will be used as reference, making prior knowledge of these systems advantageous. Vectors are by default assumed to be column vectors.
+
+\section{Abstract Algebra}
+\subsection{Groups}
+
+\begin{definition}[Group] Let $G$ be a set, equipped with a binary operation $ \cdot : G \times G \to G $ satisfying the following axioms:
+
+\begin{enumerate}
+    \item \textbf{Closure:}
+    $ \forall a,b \in G,\quad a \cdot b \in G $
+
+    \item \textbf{Associativity:} $ \forall a,b,c \in G,\quad (a \cdot b)\cdot c = a \cdot (b \cdot c) $
+
+    \item \textbf{Identity element:} $\exists e \in G \text{ : } \forall a \in G,\; a \cdot e = e \cdot a = a $
+
+    \item \textbf{Inverse element:} $\forall a \in G,\quad \exists a^{-1} \in G \text{ : } a \cdot a^{-1} = a^{-1}\cdot a = e $
+\end{enumerate}
+
+A group $G$ with this operation is denotes as $(G, \cdot)$.
+If additionally $ a \cdot b = b \cdot a $ for all $a,b \in G$, then $G$ is called an \textbf{Abelian group}.
+The \textbf{order} of a finite group $G$ is the total number of elements it contains, and it is denoted by the absolute value symbol $|G|$.
+
+\end{definition}
+
+\paragraph{Example.}
+The integers $\mathbb{Z}$, the rational numbers $\mathbb{Q}$, the real numbers $\mathbb{R}$, and even the complex numbers $\mathbb{C}$ all form infinite groups under addition.
+
+
+\subsection{Rings and Fields}
+
+\[
+\renewcommand{\arraystretch}{1.5}
+\begin{array}{|l|c|c|}
+\hline
+\textbf{Property} & \textbf{Ring } R & \textbf{Field } F \\
+\hline
+
+\text{Forms an Abelian group with addition} & \checkmark & \checkmark \\
+\hline
+
+\text{Multiplication associative} &
+(ab)c=a(bc) &
+(ab)c=a(bc) \\
+\hline
+
+\text{Distributive laws} &
+\begin{array}{c}
+a(b+c)=ab+ac \\
+(a+b)c=ac+bc
+\end{array}
+&
+\begin{array}{c}
+a(b+c)=ab+ac \\
+(a+b)c=ac+bc
+\end{array}
+\\
+\hline
+
+\text{Multiplication commutative} &
+\text{optional} &
+ab=ba \\
+\hline
+
+\text{Multiplicative identity } 1 &
+\text{optional} &
+1a=a1=a \\
+\hline
+
+\text{Every nonzero element invertible} &
+\text{not required} &
+\forall a\neq 0,\ \exists a^{-1}
+\\
+\hline
+
+\end{array}
+\]
+
+A field can be thought of as consisting of two groups packed into one structure, with the distributive law acting as a chain that holds them together. Rings, on the other hand, are incomplete. They feature one group under addition, but a "leaky" structure under multiplication. Consequently, the fundamental difference between rings and fields is division is not defined in a ring.
+
+%My intuitive picture of a field is that it consists of two groups packed into one structure, with the distributive law acting as a chain that holds them together. Rings, on the other hand, are incomplete. they feature one group under addition, but a "leaky" structure under multiplication. Consequently, the fundamental difference between rings and fields (in the finite case) is that in a ring, you cannot divide by every non-zero element.
+
+%\begin{definition}[zero divisor] Let $R$ be a ring. A nonzero element $a \in R$ is called a \textbf{zero divisor} if there exists a nonzero element $b \in R$ such that
+%$ab = 0 \quad \text{or} \quad ba = 0$.
+%\end{definition}
+%While fields contain no zero divisors, rings frequently do. This distinction is formalized by a core theorem:
+
+%\begin{theorem}
+%Every finite commutative ring with unity and no zero divisors is a field.
+%\end{theorem}
+
+%\begin{quote}
+%\small
+%I am not entirely certain why the name \textbf{Ring} stuck, but I like to imagine it is because you lack the freedom of movement found in an open field. In a ring, you are constrained; dividing by the wrong element can yield zero, causing you to fall right into the center of the ring.
+%\end{quote}
+
+
+\paragraph{Example.}
+Consider the structure $\mathbb{Z}_q$, which was previously established as a group. If the modulus $q$ is a prime number, this structure satisfies the requirements of a field, conventionally denoted by $\mathbb{F}_q$. The concrete representation of these elements matters less than the fact that they provide a complete set of distinct remainders left over after division by $q$. These fields play a fundamental role in modern cryptography.
+
+
+\paragraph{Example.}
+Let $F$ be a field. A polynomial over $F$ in the indeterminate $x$ is an expression of the form
+\[
+f(x) = \sum_{i=0}^{n} a_i x^i,
+\]
+where $n \in \mathbb{N}$ and $a_i \in F$ for all $i = 0,\dots,n$.
+
+The set of all such polynomials is denoted by $F[x]$, and it forms a commutative ring with unity under the usual addition and multiplication of polynomials.
+\begin{itemize}
+    \item $(F[x], +)$ is an Abelian group.
+    \item Multiplication of polynomials is associative.
+    \item Distributive laws hold.
+    \item The multiplicative identity is the constant polynomial $1$.
+\end{itemize}
+
+However, $F[x]$ is not a field since most polynomials do not have multiplicative inverses in $F[x]$.
+
+
+\begin{definition}[Primitive $n$-th root of unity]
+    Let $\mathbb{F}_q$ be a finite field and $n$ be a positive integer. An element $\omega \in \mathbb{F}_q$ is called a \textit{primitive $n$-th root of unity} if it satisfies the following two conditions:
+\begin{enumerate}
+    \item $\omega^n \equiv 1 \pmod q$
+    \item $\omega^k \not\equiv 1 \pmod q \quad \text{for all } 1 \le k < n$
+\end{enumerate}
+This also means that $\omega$ generates a cyclic subgroup of order n.
+\end{definition}
+
+
+\subsection{Vector Spaces and Modules}
+
+\begin{definition}[Vector space]
+A \textbf{vector space} over a field $F$ is a set $V$ equipped with two operations: addition and scalar multiplication.
+
+\begin{itemize}
+    \item $(V,+)$ is an Abelian group.
+    \item Scalar multiplication is a map: $F \times V \to V$.
+\end{itemize}
+
+These operations satisfy the usual compatibility rules, including distributivity and associativity of scalar multiplication with respect to field operations.
+\end{definition}
+
+\begin{definition}[Module]
+A \textbf{module} over a ring $R$ is a generalization of a vector space where the scalars come from a ring instead of a field.
+\end{definition}
+
+It is worth noting that the components of a vector typically come from the same field or ring used for the scalars. While this is not strictly required by the abstract definition of a vector space, it is the standard convention because it makes operations straightforward. If the elements of a vector were chosen from a different set than the scalars, one would have to explicitly define how scalar multiplication operates. Furthermore, choosing elements from the same underlying structure naturally sets the stage for matrices.
+
+
+\section{Function used in Cryptography}
+
+Moving on from abstract algebra, there are a few functions to consider. In standard computer science, the asymptotic behavior of functions is typically characterized using standard Landau notation, such as the $\mathcal{O}$, $\Omega$, and $\Theta$ functions. A general knowledge of these functions is assumed throughout this work. While these are sufficient for general computational complexity, cryptography sometimes requires more delicate functions.
+
+%Moving on from abstact algebra, there are a few functions worth talking about. In standard computer science, asymptotic behavior of functions are typically characterized using standard Landau notation, such as $\mathcal{O}$, $\Omega$ and $\Theta$ functions. The paper assumes general knowladge of these functions. While these are sufficient for general computational complexity, cryptography sometimes require more delicate functions.
+
+
+\subsection{Error term}
+
+\begin{definition}
+Let $f,g : \mathbb{N} \to \mathbb{R}$ with $g(n) \neq 0$. Then
+\[
+f(n) = o(g(n))
+\iff
+\lim_{n \to \infty} \frac{f(n)}{g(n)} = 0.
+\]
+\end{definition}
+The main topic of this work is \textbf{PAKE}. 
+The little-$o$ function denotes functions that grow asymptotically slower than the function inside the $o$. For example $n = o(p(n))$ where $p(n)$ denotes any polynomial function with degree at least 2.
+
+
+\subsection{Negligible Function}
+
+\begin{definition}[Negligible Function]
+A function $\mu(n)$ is \textbf{negligible} if it decreases faster than the reciprocal of any polynomial. That is, for every polynomial $p(n)$ and sufficiently large $n$:
+\[
+\mu(n) = o\left(\frac{1}{p(n)}\right)
+\]
+\end{definition}
+
+This idea is useful when we want to quantify functions that decrease really fast. So fast in fact that their contribution vanishes. An example of such a function is $\frac{1}{2^n}$.
+
+\subsection{Subexponential Complexity}
+
+An algorithm runs in subexponential time if its total running time grows faster than any polynomial function, but strictly slower than any traditional exponential function.
+
+\begin{definition}[Subexponential Complexity]
+Let $n$ denote the size of the input, we say T(n) has subexponential runtime if it can be written as
+\[
+T(n) = 2^{o(n)}
+\]
+\end{definition}
+
+This complexity class is relevant to distinguish from pure exponentials beacuse many problems used in classical cryptography can be solved in sub exponentail time even on classical computers. While that doesn't mean these problems are easily breakable, the jump from polynomial to subexponentail is significantly smaller than from subexponentail to exponential. To contrast these complexity classes as $n \to \infty$, consider their representative scaling functions evaluated at a large scale of $n = 100\,000$:
+
+\begin{description}
+    \item[Polynomial ($n^2$):] 
+    $10^{10}$
+    
+    \item[Subexponential ($2^{\sqrt{n}}$):] 
+    $\approx 2.01 \times 10^{95}$
+    
+    \item[Exponential ($2^n$):] 
+    $\approx 10^{30103}$
+\end{description}
+
+Complexity theorists were so fascinated by this distinction between polynomial and exponential limits that they formalized this boundary into a conjecture.
+
+\begin{theorem}[Exponential Time Hypothesis]
+There exists a constant $c > 0$ such that the 3-SAT problem (and by extension, any NP-complete problem via polynomial-time reductions) cannot be solved by any sequential algorithm in time $O(2^{cn})$. Consequently, NP-complete problems cannot be solved in subexponential time $2^{o(n)}$\cite{Impagliazzo1999ComplexityOfKSAT}.
+\end{theorem}

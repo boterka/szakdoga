@@ -1,0 +1,9 @@
+ML-KEM pk-tér és a jelszó-biztonság (MLWE / UNI-PK) – 2026-11-23
+
+Pontosítsuk, mit lát a támadó. A hálózaton az s = pk + H1(pw) megy át, ez egyenletes véletlen. Hogy ez maga nem valódi pk, azt mindenki tudja, ebből semmi nem derül ki. A veszélyes támadás a szótáras: a támadó minden pw' jelszótippre kiszámolja a pk' = s - H1(pw') értéket. A helyes jelszónál ez a valódi pk, a rossz tippeknél véletlen t. Ha a támadó egy pk'-ról el tudná dönteni, hogy „van-e mögötte kis s és e”, egyszerűen kiválasztaná a helyes jelszót.
+
+Hogy miért nem tudja: a mátrixot tényleg bárki legenerálja ρ-ból, ez nem titok. De ha megkapja az A-t és egy t-t, eldönteni, hogy létezik-e kis s és e, amelyre t = A·s + e, pontosan a döntési MLWE-probléma (Module Learning With Errors). Erről azt feltételezzük, hogy kvantumszámítógéppel is nehéz. Az ML-KEM teljes biztonsága ezen áll: ha ez könnyű lenne, a titkos kulcsot is ki lehetne nyerni.
+
+Hogy elvben miért igen: van brute force, végigpróbálni az összes kis s-t (kb. 7^512 lehetőség), és megnézni, hogy t - A·s kicsi-e. Ez exponenciális, kb. 2^1400 lépés, vagyis kivitelezhetetlen. A hatékonyabb rácsalgoritmusok is messze vannak a feltöréstől, erre van méretezve az ML-KEM-512.
+
+Az, hogy a valódi pk-k halmaza elenyészően kicsi, nem teszi könnyűvé a tagság eldöntését. Hasonló a hash-hez: a 256 bites sztringek elenyésző része egy rövid jelszó SHA-256-ja, mégsem tudod egy sztringről hatékonyan megmondani, hogy az-e. Ezért a biztonság számítási (computational), és nem információelméleti. A szakdolgozatban ezt érdemes kimondani: a 2F-PAKE jelszó-biztonsága ML-KEM-mel az MLWE-feltevésre épül, a UNI-PK tulajdonságon keresztül.

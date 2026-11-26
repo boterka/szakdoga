@@ -1,0 +1,316 @@
+\chapter{Crpytography background}
+
+\section{Computational model and security parameter}
+
+In modern cryptography a system is considered secure if no efficient
+adversary can break it with more than \emph{negligible} probability.
+All algorithms, including the adversary, are modelled as probabilistic
+polynomial-time (PPT) Turing machines, i.e.\ randomized algorithms
+whose running time is bounded by a polynomial in the length of their
+input.
+
+The probability of breaking a system is measured with respect to a
+\emph{security parameter} $\lambda \in \mathbb{N}$. $\lambda$ denotes the input size of the algortihms, and formally is written in unary form $1^\lambda$. Informally, $\lambda$
+controls the security level of the scheme: honest parties run in time
+polynomial in $\lambda$, while breaking the scheme should require time
+exponential in $\lambda$, such as $2^\lambda$ operations.
+
+
+In practice, concrete parameter sets are chosen for a fixed
+$\lambda$, typically $\lambda = 128$ (or $\lambda = 256$), meaning that the best known
+attack requires roughly $2^{128}$ operations. The best general speed up a quantum computer can provide to an adversary is via Grover's algortihm, which yields a square root speed up. Thus instead of $\lambda = 128$ operations on a normal computer, it only requires $\lambda = 64$ operations on a quantum computer.
+
+\section{Hash Functions}
+
+A hash function is any function that can be used to map data of arbitrary size to fixed-size values, though there are some hash functions that support variable-length output (which is the kind of hash function we will be using extensively in this work).
+
+Any good hash function has the property that he probability of a particular n-bit output result for a random input string is $2^(-n)$, so the hash value can be used as a representative of the message
+
+In cryptography we often require such functions, however beside the above mentioned one, we demand 3 additional characteristics:
+
+\begin{itemize}
+
+
+\item Finding an input string (message) that matches a given hash value is computationally infeasible, assuming all input strings are equally likely. This is called \textbf{Preimage Resistance}. The resistance to such search is quantified as security strength: a cryptographic hash with n bits of hash value is expected to have a preimage resistance strength of n bits. 
+
+\item The \textbf{Secound Preimage Resistance} strength, with the same expectations, refers to a similar problem of finding a second message that matches the given hash value when one message is already known.
+
+\item finding any pair of different messages that yield the same hash value is also computationally infeasible. This is called \textbf{Collision Resistence}. A cryptographic hash is expected to have a collision resistance strength of $n/2$ bits (lower because of the birthday paradox).
+
+\end{itemize}
+
+Hash functions that bear all these properties are called \emph{Cryptographic Hash Functions}. One concrete implementation we often use in this work is from the SHA-3 family, SHAKE$_(128)$, which has a variable-length output.
+
+\section{Security notions for public-key encryption}
+
+The usual setting is that Alice and Bob want to communicate over an insecure medium where Eve is eavesdropping. Alice and Bob use Public Key Encryption (PKE) to do so, which involves two keys: a private key and a public key. Each party keeps their private key secret, while sharing their public key openly. When Alice encrypts a message with Bob's public key and sends it to Bob, he can decrypt the message with his private key, but Eve has no way of decrypting it without the private key.
+
+PKE schemes can be implemented using trapdoor functions. A trapdoor function is such that it is computationally easy (meaning it can be done in polynomial time) to evaluate, but inverting it is computationally infeasible (meaning it requires exponentially many steps). The trapdoor function is usually a mathematical problem that can easily be solved in polynomial time given specific information, which serves as the private key for decryption, and is infeasible without that information. Because there is no way of proving a problem's difficulty, security proofs \textit{assume} the difficulty of the problem, and the entire security of the scheme is based on this assumption.
+
+The notion of security always relies on a \textbf{security parameter $\lambda$}, which essentially allows dialing up or down a scheme's security level. This is because it is assumed that Eve (the Adversary) can only perform a polynomial number of operations, where this polynomial is a function of the security parameter. This framework ensures that while a scheme might be vulnerable at a lower security level, dialing up the security parameter causes the difficulty of the underlying problem to explode exponentially with respect to $\lambda$. A function that takes $\lambda$ number of ones as input is denoted as $f(1^\lambda)$, which is called the unary representation of the security parameter.
+
+To formalize the security of encryption schemes, several increasingly strong notions are used. These definitions describe what an adversary is allowed to do and what the security goal is. Chosen-plaintext attack (\textbf{CPA}) and Chosen-Ciphertext Attack (\textbf{CCA}) are the two attacks the adversary is allowed to make. This means an oracle for encryption or decryption is provided to the adversary, and it can make queries to the oracle with almost any ciphertext or plaintext it desires. Needless to say, \textbf{CPA} security in asymmetric encryption is mandatory, because everyone has access to an encryption oracle.
+
+
+%The usual setting is Bob and Alice want to communicate over a flawd medium where Eve is evesdropping. Alice encrypts a messege with bob's private key and sends it to Bob. He can decrpyt the messege with his private key, but eve has no way of decryption without the private key.
+
+%this can be done using trapdoor functions. A trapdoor function is such it is computationally easy (meaning it can be done in polynomial time compleyity) to evaluate the function, but inverting the function is computationally infeasible (meaning it can only be done in exponentailly many steps). The trapdoor function is usually a mathematical problem, that can easly be solved in polynomial time given a specific information, which will serve as the private key for the encryption, and infeasible without that information. 
+
+%To formalize the security of encryption schemes, several increasingly strong notions are used. These definitions describe what an adversary is allowed to do and what is our security goal. Chosen-plaintext attack \textbf{(CPA)} and Chosen-Ciphertext Attack \textbf{(CCA)} are the two attacks we let the adversary make. This means we provide an oracle for encryption or decryption to the adversary, and it can make queries to the oracle with almost any ciphertext or plaintext it desires. Needless to say, \textbf{CPA} security in asymetric encryption is mandatory, because every adversary have access to encryption oracle.
+
+%The notion of security always relies on a \textbf{security parameter $\lambda$}, which essentially allows us to dial up or down a scheme's security level. This is because we assume the adversary can only perform a polynomial number of operations, where this polynomial is a function of the security parameter. This framework ensures that while a scheme might be vulnerable at a lower security level, dialing up the security parameter causes the difficulty of the underlying problem to explode exponentially with respect to $\lambda$. We also denote a function that takes $\lambda$ number of ones as input as $f(1^\lambda)$.It is called the unary representation of the security parameter.
+
+
+\begin{definition}[Public Key Encryption Scheme]
+A public key encryption scheme is defined over a message space $\mathcal{M}$ and a ciphertext space $\mathcal{C}$ by three algorithms $(\mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec})$:
+\begin{itemize}
+    \item $\mathsf{KeyGen}(1^\lambda) \to (pk, sk)$: A probabilistic algorithm that takes a security parameter $\lambda$ and outputs a public key $pk$ and a corresponding secret key $sk$.
+    \item $\mathsf{Enc}(pk, m) \to c$: A probabilistic algorithm that takes the public key $pk$ and a message $m \in \mathcal{M}$ as inputs, and outputs a ciphertext $c \in \mathcal{C}$.
+    \item $\mathsf{Dec}(sk, c) \to m$: A deterministic algorithm that takes the secret key $sk$ and a ciphertext $c \in \mathcal{C}$ as inputs, and outputs either the original message $m \in \mathcal{M}$ or a failure symbol $\bot$.
+\end{itemize}
+\end{definition}
+
+\paragraph{Correctness.} An encryption scheme $\Pi = (\mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec})$ is said to be \textbf{correct} if decryption yields the encrypted message, except for some negligibly small error probability. More precisely: for any message $w$, and $\mathsf{pk}$ and $\mathsf{sk}$, generated with $\mathsf{KeyGen}(1^\lambda)$
+\[
+\Pr \left[ w \neq \mathsf{Dec}(\mathsf{sk}, \mathsf{Enc}(\mathsf{pk}, w)) \right] \le \mathsf{negl}(\lambda)
+\]
+
+%The notation of security always relies on a \textbf{security parameter $\lambda$}. It basically lets dile up or down a scheme's secrutiy. Because we always assume that the the adversary can only do anything polynomially many times and this polinomial is a function of our security parameter. This ensures that a scheme might be vulnerable on a given security level, but as we dile up the security parameter, the difficulty of the underlying problem explodes exponetially in function of the security parameter, the same time the adversary's chance of breaking the scheme can only grow in polynomial. We also denote the function that take in bit strings of length lambda as $f(1^\lambda)$.
+
+
+The security proof of a PKE scheme is usually done via a "security game" played between an adversary and a challenger. Because schemes are required to remain secure after multiple uses, this game can be played repeatedly. Security is then defined by the adversary failing to achieve its goal with any significant probability, even after numerous trials.
+
+\subsection{One-Wayness under Chosen-Plaintext Attack (OW-CPA)}
+
+An encryption scheme is \textbf{one-way under chosen-plaintext attack (OW-CPA)} if it is computationally infeasible for an adversary to recover the plaintext from a ciphertext, even if the adversary can choose plaintexts to be encrypted.
+
+Formally, given a ciphertext $c \leftarrow \text{Enc}(pk, m)$ generated from a uniformly random messege \(m\), the adversary’s goal is to compute \(m\).
+
+OW-CPA only requires that recovering the message is hard. The textbook RSA and the Diffie-Hellman key exchange proovably bear this property inherently for example.
+
+\subsection{Indistinguishability under Chosen-Plaintext Attack (IND-CPA)}
+
+An encryption scheme is \textbf{IND-CPA secure} if no efficient adversary can distinguish encryptions of two chosen messages.
+
+The security game is:
+\begin{itemize}
+    \item The adversary chooses two messages \(m_0, m_1\).
+    \item A random bit \(b \in \{0,1\}\) is selected, representing the index of the message to be encrypted.
+    \item The challenger returns \(c = \text{Enc}(pk, m_b)\).
+    \item The adversary outputs a guess \(b'\).
+\end{itemize}
+
+The scheme is IND-CPA secure if:
+\[
+\Pr[b = b'] \leq \frac{1}{2} + \text{negl}(\lambda).
+\]
+This captures the idea that ciphertexts leak no information about the plaintext. The only way this can be achieved is by adding randomness to the encryption algorithm. We require the same plaintext encrypted twice to yield different ciphertexts. And not just different by one bit, on average, half of the bits need to be different.
+
+\subsection{Indistinguishability under Chosen-Ciphertext Attack (IND-CCA)}
+
+An encryption scheme is \textbf{IND-CCA secure} if no efficient adversary can distinguish encryptions of two chosen messages, even when the adversary has access to a decryption oracle.
+
+In the IND-CCA game:
+\begin{itemize}
+    \item The adversary can query a decryption oracle on any ciphertexts except the challenge ciphertext.
+    \item The adversary receives a challenge ciphertext encrypting either \(m_0\) or \(m_1\).
+    \item The adversary continues to query the decryption oracle (excluding the challenge ciphertext).
+    \item The adversary must gue\section{Security notions for public-key encryption}
+
+The usual setting is that Alice and Bob want to communicate over an insecure medium where Eve is eavesdropping. Alice and Bob use Public Key Encryption (PKE) to do so, which involves two keys: a private key and a public key. Each party keeps their private key secret, while sharing their public key openly. When Alice encrypts a message with Bob's public key and sends it to Bob, he can decrypt the message with his private key, but Eve has no way of decrypting it without the private key.
+
+PKE schemes can be implemented using trapdoor functions. A trapdoor function is such that it is computationally easy (meaning it can be done in polynomial time) to evaluate, but inverting it is computationally infeasible (meaning it requires exponentially many steps). The trapdoor function is usually a mathematical problem that can easily be solved in polynomial time given specific information, which serves as the private key for decryption, and is infeasible without that information. Because there is no way of proving a problem's difficulty, security proofs \textit{assume} the difficulty of the problem, and the entire security of the scheme is based on this assumption.
+
+The notion of security always relies on a \textbf{security parameter $\lambda$}, which essentially allows dialing up or down a scheme's security level. This is because it is assumed that Eve (the Adversary) can only perform a polynomial number of operations, where this polynomial is a function of the security parameter. This framework ensures that while a scheme might be vulnerable at a lower security level, dialing up the security parameter causes the difficulty of the underlying problem to explode exponentially with respect to $\lambda$. A function that takes $\lambda$ number of ones as input is denoted as $f(1^\lambda)$, which is called the unary representation of the security parameter.
+
+To formalize the security of encryption schemes, several increasingly strong notions are used. These definitions describe what an adversary is allowed to do and what the security goal is. Chosen-plaintext attack (\textbf{CPA}) and Chosen-Ciphertext Attack (\textbf{CCA}) are the two attacks the adversary is allowed to make. This means an oracle for encryption or decryption is provided to the adversary, and it can make queries to the oracle with almost any ciphertext or plaintext it desires. Needless to say, \textbf{CPA} security in asymmetric encryption is mandatory, because everyone has access to an encryption oracle.
+
+
+%The usual setting is Bob and Alice want to communicate over a flawd medium where Eve is evesdropping. Alice encrypts a messege with bob's private key and sends it to Bob. He can decrpyt the messege with his private key, but eve has no way of decryption without the private key.
+
+%this can be done using trapdoor functions. A trapdoor function is such it is computationally easy (meaning it can be done in polynomial time compleyity) to evaluate the function, but inverting the function is computationally infeasible (meaning it can only be done in exponentailly many steps). The trapdoor function is usually a mathematical problem, that can easly be solved in polynomial time given a specific information, which will serve as the private key for the encryption, and infeasible without that information. 
+
+%To formalize the security of encryption schemes, several increasingly strong notions are used. These definitions describe what an adversary is allowed to do and what is our security goal. Chosen-plaintext attack \textbf{(CPA)} and Chosen-Ciphertext Attack \textbf{(CCA)} are the two attacks we let the adversary make. This means we provide an oracle for encryption or decryption to the adversary, and it can make queries to the oracle with almost any ciphertext or plaintext it desires. Needless to say, \textbf{CPA} security in asymetric encryption is mandatory, because every adversary have access to encryption oracle.
+
+%The notion of security always relies on a \textbf{security parameter $\lambda$}, which essentially allows us to dial up or down a scheme's security level. This is because we assume the adversary can only perform a polynomial number of operations, where this polynomial is a function of the security parameter. This framework ensures that while a scheme might be vulnerable at a lower security level, dialing up the security parameter causes the difficulty of the underlying problem to explode exponentially with respect to $\lambda$. We also denote a function that takes $\lambda$ number of ones as input as $f(1^\lambda)$.It is called the unary representation of the security parameter.
+
+
+\begin{definition}[Public Key Encryption Scheme]
+A public key encryption scheme is defined over a message space $\mathcal{M}$ and a ciphertext space $\mathcal{C}$ by three algorithms $(\mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec})$:
+\begin{itemize}
+    \item $\mathsf{KeyGen}(1^\lambda) \to (pk, sk)$: A probabilistic algorithm that takes a security parameter $\lambda$ and outputs a public key $pk$ and a corresponding secret key $sk$.
+    \item $\mathsf{Enc}(pk, m) \to c$: A probabilistic algorithm that takes the public key $pk$ and a message $m \in \mathcal{M}$ as inputs, and outputs a ciphertext $c \in \mathcal{C}$.
+    \item $\mathsf{Dec}(sk, c) \to m$: A deterministic algorithm that takes the secret key $sk$ and a ciphertext $c \in \mathcal{C}$ as inputs, and outputs either the original message $m \in \mathcal{M}$ or a failure symbol $\bot$.
+\end{itemize}
+\end{definition}
+
+\paragraph{Correctness.} An encryption scheme $\Pi = (\mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec})$ is said to be \textbf{correct} if decryption yields the encrypted message, except for some negligibly small error probability. More precisely: for any message $w$, and $\mathsf{pk}$ and $\mathsf{sk}$, generated with $\mathsf{KeyGen}(1^\lambda)$
+\[
+\Pr \left[ w \neq \mathsf{Dec}(\mathsf{sk}, \mathsf{Enc}(\mathsf{pk}, w)) \right] \le \mathsf{negl}(\lambda)
+\]
+
+%The notation of security always relies on a \textbf{security parameter $\lambda$}. It basically lets dile up or down a scheme's secrutiy. Because we always assume that the the adversary can only do anything polynomially many times and this polinomial is a function of our security parameter. This ensures that a scheme might be vulnerable on a given security level, but as we dile up the security parameter, the difficulty of the underlying problem explodes exponetially in function of the security parameter, the same time the adversary's chance of breaking the scheme can only grow in polynomial. We also denote the function that take in bit strings of length lambda as $f(1^\lambda)$.
+
+
+The security proof of a PKE scheme is usually done via a "security game" played between an adversary and a challenger. Because schemes are required to remain secure after multiple uses, this game can be played repeatedly. Security is then defined by the adversary failing to achieve its goal with any significant probability, even after numerous trials.
+
+\subsection{One-Wayness under Chosen-Plaintext Attack (OW-CPA)}
+
+An encryption scheme is \textbf{one-way under chosen-plaintext attack (OW-CPA)} if it is computationally infeasible for an adversary to recover the plaintext from a ciphertext, even if the adversary can choose plaintexts to be encrypted.
+
+Formally, given a ciphertext $c \leftarrow \text{Enc}(pk, m)$ generated from a uniformly random messege \(m\), the adversary’s goal is to compute \(m\).
+
+OW-CPA only requires that recovering the message is hard. The textbook RSA and the Diffie-Hellman key exchange proovably bear this property inherently for example.
+
+\subsection{Indistinguishability under Chosen-Plaintext Attack (IND-CPA)}
+
+An encryption scheme is \textbf{IND-CPA secure} if no efficient adversary can distinguish encryptions of two chosen messages.
+
+The security game is:
+\begin{itemize}
+    \item The adversary chooses two messages \(m_0, m_1\).
+    \item A random bit \(b \in \{0,1\}\) is selected, representing the index of the message to be encrypted.
+    \item The challenger returns \(c = \text{Enc}(pk, m_b)\).
+    \item The adversary outputs a guess \(b'\).
+\end{itemize}
+
+The scheme is IND-CPA secure if:
+\[
+\Pr[b = b'] \leq \frac{1}{2} + \text{negl}(\lambda).
+\]ss which message was encrypted.
+\end{itemize}
+
+Again, the adversary should not succeed with probability significantly better than $\frac{1}{2}$. And this probability should aproach $\frac{1}{2}$ at least subexponentially fast as $\lambda \to \infty$.
+
+\subsection{Why CCA security is important}
+
+%IND-CCA security seems a bit far fetched. How could the adversary have access to decryption oracle? Letting the adversary decrypt any cyphertext renders the whole security oboslete. In practice servers are encrypting and decrypting messeges not people. A very common scenario is when a server recives an encrypted messege, and tries to decrypt it with it's private key, and fails. Now the server must not act in other way, than were it able to decrypt the cyphertext, otherwise it will leak information about the private key or the messege. This is the idea captured in CCA security, we obviousy wont let the adversary decrypt the main cyphertext, but if it already can somehow manypulate oracles of decryption (i.e servers) why not let it go all the way and get a lot more than in reality. this way we guarantee that if even in this thougher model our encrpytion is safe, then real word attacks will be complete inefective.
+
+At first glance, IND-CCA security seems a bit far-fetched. How could an adversary realistically have access to a decryption oracle? Furthermore, allowing the adversary to decrypt arbitrary ciphertexts would seem to render the entire security model obsolete. 
+
+In practice, however, it is servers, not humans that are constantly encrypting and decrypting messages. A highly common real-world scenario occurs when a server receives a ciphertext, attempts to decrypt it with its private key, and fails. If the server handles this failure poorly, its behavioral discrepancies can leak critical information about the private key or the underlying message. 
+
+This side-channel vulnerability is precisely the concept captured by CCA security. While we obviously forbid the adversary from querying the target ciphertext itself, we assume they can manipulate external decryption oracles (such as these servers). By granting the adversary significantly more power in the game than they would possess in reality, we establish a robust security margin. This guarantees that if our encryption scheme remains secure within this strictly tougher theoretical model, real-world attacks of this kind will be rendered completely ineffective.
+
+For this reason, modern cryptographic constructions aim for IND-CCA security. To achieve this, we must modify the decryption algorithms to explicitly or implicitly reject ciphertexts if they appear to have been tampered with. Crucially, both a ciphertext rejection and a successful decryption must be executed in the exact same amount of time otherwise it leads us back to the previously mentioned problem.
+
+
+
+
+
+
+
+
+
+\section{Random Oracle Model}
+
+In security proofs, it is often difficult or impossible to prove the security of a scheme using concrete hash functions due to their deterministic structures. To overcome this limitation, the \textbf{Random Oracle Model (ROM)} was introduced. 
+
+In the ROM, a cryptographic hash function is modeled as an idealized, publicly accessible black box known as a \textit{Random Oracle}. When an entity (either a legitimate user or an adversary) queries the oracle with a message $m$, the oracle responds as follows:
+\begin{itemize}
+\item If $m$ has been queried previously, the oracle returns the identical response $h$ stored in its history.
+\item If $m$ is a new query, the oracle selects a value $h$ uniformly at random from its output space, records the pair $(m, h)$ in its internal table, and returns $h$.
+\end{itemize}
+While security in the ROM does not mathematically guarantee security when the oracle is replaced by a real-world hash function (referred to as the \textit{Standard Model}), a proof in the ROM demonstrates that the protocol has no inherent flaws assuming the underlying hash function cannot be distinguished from an ideal one.
+
+
+
+\section{Key Encapsulation Mechanism}
+
+In modern public-key cryptography, Key Encapsulation Mechanisms (KEMs) are more widely used than general Public-Key Encryption schemes. The main reason is that most real-world protocols do not need to encrypt arbitrary-length messages directly under a computationally expensive public key algorithm. Instead, they require the secure establishment of a short symmetric key, which is then used with fast symmetric encryption (e.g., AES or ChaCha20).
+
+\begin{definition}[Key Encapsulation Mechanism]
+A Key Encapsulation Mechanism associated with a key space $\mathcal{K}$ and a ciphertext space $\mathcal{C}$ is a triple of probabilistic polynomial-time (PPT) algorithms $(\mathsf{KeyGen}, \mathsf{Encaps}, \mathsf{Decaps})$ such that:
+
+\begin{itemize}
+    \item $\mathsf{KeyGen}(1^\lambda) \to (pk, sk)$: A probabilistic algorithm that takes a security parameter $\lambda$ and outputs a public key $pk$ and a secret key $sk$.
+    
+    \item $\mathsf{Encaps}(pk) \to (K, c)$: A probabilistic algorithm that takes the public key $pk$ and outputs a symmetric key $K \in \mathcal{K}$ along with its corresponding ciphertext encapsulation $c \in \mathcal{C}$.
+    
+    \item $\mathsf{Decaps}(sk, c) \to K \text{ or } \bot$: A deterministic algorithm that takes the secret key $sk$ and a ciphertext $c$, and outputs either the symmetric key $K \in \mathcal{K}$ or a failure symbol $\bot$.
+\end{itemize}
+
+\end{definition}
+
+\paragraph{Correctness.}
+We say that $\Pi = (\mathsf{KeyGen}, \mathsf{Encaps}, \mathsf{Decaps})$ is \textbf{correct} if decapsulation yields the correct key, except for some negligibly small error probability. More precisely: for any $\mathsf{pk}$ and $\mathsf{sk}$ generated with $\mathsf{KeyGen}(1^\lambda)$, and $c$ and $K$ generated with $\mathsf{Encaps}(\mathsf{pk})$
+\[
+\Pr \left[ K \neq \mathsf{Decaps}(\mathsf{sk}, c) \right] \le \mathsf{negl}(\lambda)
+\]
+
+Security definitions for KEMs closely resemble the previously described definitions, with the following change: indistinguishability means distinguishing the ciphertext $c$ output by $\mathsf{Encaps}(pk)$ from a uniformly random ciphertext $c'$, instead of any particular ciphertext.
+
+%The Security definitions for a KEMs highly resembe the previously described definitions with the following change: Indistinguishibility i meant for distinguishing encapsulated keys $c$ of one of the outputs of $\mathsf{Encaps}(pk)$ from random uniformly chosen bit strings of the same length.
+
+\section{ElGamal and Diffie-Hellman comparison}
+
+To demonstrate the difference between PKE schemes and KEMs, the ElGamal encryption scheme and the Diffie-Hellman key exchange can be compared. ElGamal operates as a classic PKE scheme. On the other hand, Diffie-Hellman is used purely to agree upon a fresh, uniformly random secret. From this key exchange, a KEM can easily be constructed. A detailed analysis of the underlying mechanics of these specific protocols is beyond the scope of this work, however, a comprehensive overview can be found in\cite{HoffsteinPipherSilverman}.
+
+%I would like to demonstrate the difference between KEM's and PKE's by comparing ElGamal and Diffie-Hellman.  ElGamal operates as a classic PKE scheme. On the other hand, Diffie-Hellman is used purely to agree upon a fresh, uniformly random secret. We can construct a KEM from this key enchange (DH-KEM)
+
+\subsection{Domain Paramaters}
+
+\begin{definition}[Discrete Logarithm Problem (DLP)]
+Let $p$ be a large prime number and $r, h, x \in \{1, \dots, p-1\}$. The \textbf{DLP} is to find an integer $x$ such that:
+\[
+r^x \equiv h \pmod p
+\]
+\end{definition}
+
+While this definition can be formulated more abstractly using group theory, this modular arithmetic approach feels much more inuitive.
+
+Both of the aforementioned schemes base their security on the \textbf{DLP}, but the latter is significantly more efficient and compact. To compare them under the same framework, let the domain parameters be $\mathsf{Domain}(p, q, g)$, where $p$ and $q$ are prime numbers satisfying the relation:
+\[
+p \equiv 1 \pmod q
+\]
+The element $g \in \mathbb{F}_p$ serves as a generator of a cyclic subgroup $G$ of order $q$. Typically $p$ is chosen to be large enough to resist index calculus and related methods for solving the discrete-log problem, while $q$ is large enough to resist the birthday attack. This setup is commonly referred to as a \textit{Schnorr group}, which represents an environment where the \textbf{DLP} is exceptionally difficult to solve. In both schemes, the private key consists of an element $x$ sampled uniformly random from $G$, while the corresponding public key is computed as $y=g^x \bmod p$ and the plaintext is denoted by $m$.
+
+
+\subsection{Diffie-Hellman Key Encapsulation (DH-KEM)}
+The Diffie-Hellman protocol can be easily transformed into a KEM simply by packaging its steps into the standard KEM framework:
+
+\begin{itemize}
+    \item $\mathsf{KeyGen}(1^\lambda)$: Bob generates his long-term Diffie-Hellman pair. His private key is a random exponent $x$, and his public key is $y = g^x \bmod p$.
+    \item $\mathsf{Encaps}(y)$: To generate a key for Bob, Alice chooses a random exponent $r$ form $G$ on the fly. She computes the ciphertext (the encapsulation) as $c = g^r \bmod p$, and computes the shared symmetric key as $K = y^r = g^{xr} \bmod p$. She outputs the pair $(K, c)$.
+    \item $\mathsf{Decaps}(x, c)$: Bob receives the ciphertext $c = g^r \bmod p$. Using his private key $x$, he computes the exact same symmetric key $K = c^x = g^{rx} \bmod p$.
+\end{itemize}
+
+By structuring the Diffie-Hellman protocol this way, the underlying mathematical operations remain unchanged. The key generation steps are simply aggregated so that the protocol functions as an asymmetric mechanism to safely distribute a random symmetric key.
+
+
+
+\subsection{Comparison}
+
+\begin{itemize}
+    \item Ciphertexts are twice as long in ElGamal because the encryption outputs a pair $(c_1, c_2)$, where $c_1 = g^k \bmod p$ and $c_2 = m \cdot y^k \bmod p$. A DH-KEM only transmits the single group element $c = y$.
+    \item ElGamal encryption requires generating a single-use nonce $k$ and calculating an additional modular exponentiation $c_1 = g^k \bmod p$, for every encrypted message, which increases the processing overhead.
+    \item While ElGamal ciphertexts require strict indistinguishability (IND-CPA) from any ciphertext because the scheme encrypts arbitrary, potentially predictable user messages, a DH-KEM only encapsulates a uniformly random key. Because this key is freshly generated for every session, we only need the ciphertext to be indistinguishable from uniformly random chosen ciphertexts, not any arbitrarily chosen ciphertext, making its core security requirements easier to satisfy.
+\end{itemize}
+
+\section{The Fujisaki-Okamoto transform}
+
+%The FO transform is a method to convert a OW-CPA or IND-CPA secure encryption scheme into an IND-CCA secure PKE or KEM in the random oracle model.
+%The variant I would like to describe turns a perfectly correct OW_CPA secure PKE into an IND-CCA secure KEM. The one used in Kyber works similarly, except it doesn't need perfect correctness. This transform is used because it's even provably secure in the QROM. The drawback of the transform is it doesnt turn the PKE into a faster and more compact KEM, like how ElGamal can basically be turned into Diffie-Hellman, but rather even adds additional computation. Even though thats the case if we compare ML-KEM to other post-quantum KEMs it is still has one of the fastest computations and versatility, meaning the program code of Kyber can be reused on different security levels. 
+
+The Fujisaki-Okamoto (FO) transform is a method used to convert a OW-CPA or IND-CPA secure encryption scheme into an IND-CCA secure PKE or KEM within the random oracle model. The variant described here transforms a perfectly correct OW-CPA secure PKE into an IND-CCA secure KEM. Perfectly correct simply means that, given a ciphertext $c$ generated with the encryption algorithm from a message $m$, we can always retrieve $m$ via the decryption algorithm, there is no negligible chance of the decryption returning with a different value.
+
+The transform takes a perfectly correct, OW-CPA secure PKE scheme $\Pi = (\mathsf{KeyGen}, \mathsf{Encrypt}, \mathsf{Decrypt})$ and a cryptographic hash function $\mathcal{H}: \{0,1\}^* \to \{0,1\}^\lambda$. We construct an IND-CCA secure KEM $\Pi' = (\mathsf{KeyGen}', \mathsf{Encaps}', \mathsf{Decaps}')$ by modifying the three underlying algorithms as follows:
+
+\begin{itemize}
+    \item $\mathsf{KeyGen}'(1^\lambda)$: Runs the base key generation to get $(pk, sk)$. It then samples a uniformly random bitstring $s \in \{0,1\}^\lambda$ to act as a fallback for implicit rejection. The expanded secret key is defined as $sk' = (sk, s)$, and the algorithm outputs $(pk, sk')$.
+    
+    \item $\mathsf{Encaps}'(pk)$: To turn this into an encapsulation algorithm, we eliminate external message inputs entirely. It samples a random message $m$ uniformly from the plaintext space and hashes it to derive the encryption randomness, $r = \mathcal{H}(m)$. It then computes the ciphertext as $c = \mathsf{Encrypt}(pk, m, r)$, where $r$ acts as the deterministic seed for all internal pseudo-random generators. Finally, it derives the shared secret key $K = \mathcal{H}(m)$ and outputs the pair $(c, K)$.
+    
+    \item $\mathsf{Decaps}'(sk', c)$: To decrypt and derive the shared secret, the algorithm first parses $sk' = (sk, s)$ and runs the base decryption to recover the candidate message: $m' = \mathsf{Decrypt}(sk, c)$. It then performs a \textit{re-encryption check} to verify the ciphertext's integrity by computing $c' = \mathsf{Encrypt}(pk, m', \mathcal{H}(m'))$. 
+    \begin{itemize}
+        \item If $c = c'$, the ciphertext is valid, and the algorithm returns the correct session key: $K = \mathcal{H}(m')$.
+        \item If $c \neq c'$, the ciphertext has been tampered with and the algorithm implicitly rejects it by returning $\mathcal{H}(s, c)$.
+    \end{itemize}
+\end{itemize}
+
+The resulting key encapsulation scheme $\Pi'$ is provably IND-CCA secure in the Random Oracle Model.
+
+The variant utilized in Kyber operates similarly, except it does not require perfect correctness. This transform is widely adopted because it remains provably secure even in the Quantum Random Oracle Model (QROM). However, it is not entirely clear to the cryptography community whether QROM is strictly required for post-quantum security or not.
+
+The primary drawback of the FO transform is that it does not convert a PKE into a faster, more compact KEM—in the way ElGamal can be somewhat turned into Diffie-Hellman—but rather introduces additional computational overhead. Despite this limitation, comparing ML-KEM to other post-quantum KEMs reveals that it still delivers some of the fastest execution speeds and highest versatility, meaning the underlying Kyber implementation code can be easily reused across different security levels.
+

@@ -26,7 +26,7 @@ static int hqc1_h1(uint8_t *out,
                           r, NONCE_LEN, out, HQC1_PK_LEN);
     if (ret != 0) return ret;
 
-    ret[HQC1_PK_LEN - 1] &= 0x1F;
+    out[HQC1_PK_LEN - 1] &= 0x1F;
     return 0;
 }
 
